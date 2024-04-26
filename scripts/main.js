@@ -3,6 +3,7 @@ const scoredDiceDiv = document.getElementById('scored-dice-container');
 
 const scoreDisplay = document.getElementById('score-display');
 const valueDisplay = document.getElementById('value-display');
+const multiplierDisplay = document.getElementById('multiplier-display');
 
 const playButton = document.getElementById('play-button');
 playButton.onclick = playDice;
@@ -17,6 +18,7 @@ rollButton.onclick = () => {
 
     if(activeValues.length < 1) {
         currentValue += getPlayValue(scoredValues);
+        multiplier += multiplierIncrement;
         scoredValues = [];
         activeValues = createHand();
     }
@@ -28,10 +30,12 @@ rollButton.onclick = () => {
 };
 const cashoutButton = document.getElementById('cashout-button');
 cashoutButton.onclick = () => {
+    currentValue += getPlayValue(scoredValues);
     if(currentValue < 500 || !canRoll) {
         currentValue = 0;
     }
-    score += currentValue;
+    score += currentValue * multiplier;
+    multiplier = 1;
     currentValue = 0;
     resetDice();
     updateDisplay();
@@ -46,6 +50,9 @@ let diceSize = 6;
 
 let score = 0;
 let currentValue = 0;
+
+let multiplier = 1;
+let multiplierIncrement = 1;
 
 let scoredValues = [];
 let activeValues = [];
@@ -97,29 +104,52 @@ function getPlayValue(dice) {
     for(let i = 0; i < dice.length; i++) {
         amounts[dice[i]]++;
     }
-    console.log(amounts); // for debugging
+    // console.log(amounts); // for debugging
 
     let playValue = 0;
 
-    // find 3+ of a kind and 3double and 2triple moves
-    let numPairs = 0;
-    let numTriples = 0;
+    // straights
     let straightSize = 0;
+    let straightStart = 0;
+    let maxStraightStart = 0;
     let maxStraightSize = 0;
-    let threeOfAKindValue = 0;
     for(let i = 1; i < amounts.length; i++) {
-        if(amounts[i] == 1) {
+        if(amounts[i] > 0) {
+            if(straightSize < 1) {
+                straightStart = i;
+            }
             straightSize++;
         }
         else {
             straightSize = 0;
         }
-        maxStraightSize = maxStraightSize < straightSize ? straightSize : maxStraightSize;
+        
+        if(straightSize >= maxStraightSize) {
+            maxStraightSize = straightSize;
+            maxStraightStart = straightStart;
+        }
+    }
+    // console.log(`straight length: ${maxStraightSize}, starts at: ${maxStraightStart}`); // for debugging
+
+    // find 3+ of a kind and 3double and 2triple moves
+    // also remove straight parts if neccissary
+    let numPairs = 0;
+    let numTriples = 0;
+    let threeOfAKindValue = 0;
+    for(let i = 1; i < amounts.length; i++) {
+        if(
+            amounts[i] > 0 &&
+            maxStraightSize >= minStraightSize && 
+            i >= maxStraightStart &&
+            i < maxStraightStart + maxStraightSize
+        ) {
+            amounts[i]--;
+        }
 
         if(amounts[i] == 2) {
             numPairs++;
         }
-        else if(amounts[i] == 3) {
+        if(amounts[i] == 3) {
             numTriples++;
             if(i == 1) {
                 playValue += 300;
@@ -136,6 +166,7 @@ function getPlayValue(dice) {
             amounts[i] = 0;
         }
     }
+    // console.log(amounts); // for debugging
 
     if(numPairs >= 3) {
         return 1500;
@@ -145,11 +176,10 @@ function getPlayValue(dice) {
     }
     
     if(maxStraightSize >= minStraightSize) {
-        return 1500 + 100*(maxStraightSize-minStraightSize);
+        playValue = 1500 + 100*(maxStraightSize-minStraightSize);
     }
 
     // find remaining 5s and 1s
-    console.log(amounts); // for debugging
     playValue += (amounts[1] * 100) + (amounts[5] * 50);
     amounts[0] -= amounts[1] + amounts[5];
     amounts[1] = 0;
@@ -157,7 +187,7 @@ function getPlayValue(dice) {
 
     // check for remaining dice
     // play does not count if not all dice are used
-    console.log(amounts); // for debugging
+    // console.log(amounts); // for debugging
     for(let i = 0; i < amounts.length; i++) {
         if(amounts[i] > 0) {
             return 0;
@@ -214,7 +244,7 @@ function oldGetPlayValue(dice) {
             trimedDice.push(dice[i]);
         }
     }
-    console.log(trimedDice);
+    // console.log(trimedDice); // for debugging
 
     if(trimedDice.length > 0) {
         let trimedValue = getPlayValue(trimedDice);
@@ -237,6 +267,12 @@ function playDice() {
             playedDice.push(activeValues[i]);
         }
     }
+    if(playedDice.length < 1) {
+        errorDisplay.innerText = 'Play is invalid';
+        return;
+    }
+    playedDice = playedDice.concat(scoredValues);
+
 
     let playValue = getPlayValue(playedDice);
     // console.log(`Value: ${playValue} (${playedDice})`); // for debugging
@@ -269,6 +305,7 @@ function updateDisplay() {
     errorDisplay.innerText = '';
     scoreDisplay.innerText = score;
     valueDisplay.innerText = currentValue + getPlayValue(scoredValues);
+    multiplierDisplay.innerText = multiplier;
     activeValues = fillDice(activeValues);
     selectedValues = [];
 
