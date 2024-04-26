@@ -1,0 +1,70 @@
+:root {
+    --dice-size: 40px;
+}
+
+*{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#error-display {
+    color: red;
+}
+
+#scored-dice-container {
+    width: fit-content;
+    min-width: 312px;
+    min-height: 52px;
+    padding: 5px;
+    border: 5px solid red;
+}
+
+#active-dice-container {
+    width: fit-content;
+    min-width: 312px;
+    min-height: 52px;
+    padding: 5px;
+    border: 5px solid blue;
+}
+
+.active-dice { 
+    display: inline-block;
+    width: var(--dice-size);
+    height: var(--dice-size);
+    margin: 3px;
+    padding: 0;
+    font-size: 20px;
+    font-weight: 900;
+    line-height: var(--dice-size);
+    text-align: center;
+    border: 3px solid black;
+    user-select: none;
+}
+.active-dice:hover {
+    background-color: rgb(180,180,180);
+}
+
+.dice-scored {
+    display: inline-block;
+    width: var(--dice-size);
+    height: var(--dice-size);
+    margin: 3px;
+    padding: 0;
+    font-size: 20px;
+    font-weight: 900;
+    line-height: var(--dice-size);
+    text-align: center;
+    border: 3px solid black;
+    user-select: none;
+    background-color: rgb(200,200,200);
+}
+
+.dice-selected {
+    background-color: rgb(200,250,200);
+}
+.dice-selected:hover {
+    background-color: rgb(150,200,150);
+}
+
+.roll-button-unavailable {
+    background-color: rgb(250,150,150);
+}
