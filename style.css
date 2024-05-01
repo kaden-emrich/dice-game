@@ -10,6 +10,10 @@
     color: red;
 }
 
+#type-display:empty::before {
+    content: "\A0"; /* if empty makes the div still show */
+}
+
 #scored-dice-container {
     width: fit-content;
     min-width: 312px;
